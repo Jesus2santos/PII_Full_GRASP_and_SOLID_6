@@ -1,29 +1,18 @@
-//-------------------------------------------------------------------------
-// <copyright file="Recipe.cs" company="Universidad Católica del Uruguay">
-// Copyright (c) Programación II. Derechos reservados.
-// </copyright>
-//-------------------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
-
 namespace Full_GRASP_And_SOLID
 {
-    public class Recipe : IRecipeContent // Modificado por DIP
+    public class Recipe : IRecipeContent
     {
-        // Cambiado por OCP
         private IList<BaseStep> steps = new List<BaseStep>();
 
         public Product FinalProduct { get; set; }
+        public bool Cooked { get; private set; } = false;  // Cooked empieza en false
 
-        // Agregado por Creator
         public void AddStep(Product input, double quantity, Equipment equipment, int time)
         {
             Step step = new Step(input, quantity, equipment, time);
             this.steps.Add(step);
         }
 
-        // Agregado por OCP y Creator
         public void AddStep(string description, int time)
         {
             WaitStep step = new WaitStep(description, time);
@@ -35,7 +24,6 @@ namespace Full_GRASP_And_SOLID
             this.steps.Remove(step);
         }
 
-        // Agregado por SRP
         public string GetTextToPrint()
         {
             string result = $"Receta de {this.FinalProduct.Description}:\n";
@@ -44,13 +32,11 @@ namespace Full_GRASP_And_SOLID
                 result = result + step.GetTextToPrint() + "\n";
             }
 
-            // Agregado por Expert
             result = result + $"Costo de producción: {this.GetProductionCost()}";
 
             return result;
         }
 
-        // Agregado por Expert
         public double GetProductionCost()
         {
             double result = 0;
@@ -61,6 +47,44 @@ namespace Full_GRASP_And_SOLID
             }
 
             return result;
+        }
+
+        // Nuevo método: Sumar el tiempo de todos los pasos
+        public int GetCookTime()
+        {
+            int totalTime = 0;
+            foreach (BaseStep step in this.steps)
+            {
+                totalTime += step.Time;  // Asumimos que `Time` está definido en la clase `BaseStep`
+            }
+            return totalTime;
+        }
+
+        // Nuevo método: Comienza la cocción utilizando el temporizador
+        public void Cook()
+        {
+            if (!Cooked)  // La receta solo se puede cocinar una vez
+            {
+                CountdownTimer timer = new CountdownTimer();
+                timer.Register(GetCookTime(), new RecipeCooker(this)); // Usamos un cliente Timer
+                Cooked = false; // Se pondrá a true cuando el temporizador termine
+            }
+        }
+    }
+
+    // Implementación del TimerClient para Recipe
+    public class RecipeCooker : TimerClient
+    {
+        private Recipe recipe;
+
+        public RecipeCooker(Recipe recipe)
+        {
+            this.recipe = recipe;
+        }
+
+        public void TimeOut()
+        {
+            recipe.Cooked = true;  // Al terminar el temporizador, cambiamos Cooked a true
         }
     }
 }

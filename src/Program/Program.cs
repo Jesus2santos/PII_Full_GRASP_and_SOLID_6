@@ -1,19 +1,11 @@
-﻿//-------------------------------------------------------------------------
-// <copyright file="Program.cs" company="Universidad Católica del Uruguay">
-// Copyright (c) Programación II. Derechos reservados.
-// </copyright>
-//-------------------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Threading;
 
 namespace Full_GRASP_And_SOLID
 {
     public class Program
     {
         private static List<Product> productCatalog = new List<Product>();
-
         private static List<Equipment> equipmentCatalog = new List<Equipment>();
 
         public static void Main(string[] args)
@@ -31,6 +23,12 @@ namespace Full_GRASP_And_SOLID
             printer.PrintRecipe(recipe);
             printer = new FilePrinter();
             printer.PrintRecipe(recipe);
+
+            // Verificar el estado de Cooked antes y después de la cocción
+            Console.WriteLine($"Cooked: {recipe.Cooked}");
+            recipe.Cook();
+            Thread.Sleep(500); // 0.5 segundos
+            Console.WriteLine($"Cooked: {recipe.Cooked}");
         }
 
         private static void PopulateCatalogs()
@@ -51,16 +49,6 @@ namespace Full_GRASP_And_SOLID
         private static void AddEquipmentToCatalog(string description, double hourlyCost)
         {
             equipmentCatalog.Add(new Equipment(description, hourlyCost));
-        }
-
-        private static Product ProductAt(int index)
-        {
-            return productCatalog[index] as Product;
-        }
-
-        private static Equipment EquipmentAt(int index)
-        {
-            return equipmentCatalog[index] as Equipment;
         }
 
         private static Product GetProduct(string description)
